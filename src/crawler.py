@@ -26,8 +26,10 @@ def get_page():
     res = rs.get('https://www.ptt.cc/bbs/Gossiping/index.html')
 
     soup = BeautifulSoup(res.text, "html.parser")
-    for entry in soup.select('.r-ent'):
-        print(entry.select('.title')[0].text, entry.select('.date')[0].text)
+    titles = [entry.select('.title')[
+        0].text for entry in soup.select('.r-ent')]
+
+    return titles
 
 
 if __name__ == "__main__":
