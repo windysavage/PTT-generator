@@ -1,8 +1,8 @@
 name: GitHub Actions Demo
 on: [push]
-paths:
-  - 'src/'
-  - 'tests/'
+  paths:
+    - 'src/**/*'
+    - 'tests/**/*'
 jobs:
   CI:
     runs-on: ubuntu-latest
