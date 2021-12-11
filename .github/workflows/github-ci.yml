@@ -6,7 +6,7 @@ on:
       - 'tests/**/*'
       - '.github/**/*'
 jobs:
-  CI:
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
