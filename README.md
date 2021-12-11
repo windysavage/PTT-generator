@@ -10,6 +10,6 @@ In order to prepare the datasets for language generation, this repo offered a to
 - To crawl titles of a given topic
 
 ```bash
-python src/crawler.py --topic Gossiping
+python src/crawler.py --topic Gossiping --output-dir ./data --output-type json
 ```
   

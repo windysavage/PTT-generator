@@ -99,7 +99,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser("The argument parser for data crawling")
     parser.add_argument("--topic", type=str, default="Gossiping")
     parser.add_argument("--output-dir", type=str, default="./data")
-    parser.add_argument("--output-type", type=str, default="json")
+    parser.add_argument("--output-type", type=str,
+                        default="json", choices=["json"])
     args = parser.parse_args()
 
     crawler = PttCrawler(topic=args.topic, n_pages=1)
