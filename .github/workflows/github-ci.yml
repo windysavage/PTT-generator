@@ -1,5 +1,5 @@
 name: pytest
-author: windysavage
+author: 'windysavage'
 on:
   push:
     paths:
