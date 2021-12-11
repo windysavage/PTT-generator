@@ -1,11 +1,10 @@
 name: pytest
-author: 'windysavage'
 on:
   push:
     paths:
       - 'src/**/*'
       - 'tests/**/*'
-      - '.github/**/*'
+      # - '.github/**/*'
 jobs:
   CI:
     runs-on: ubuntu-latest
