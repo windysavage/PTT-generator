@@ -9,3 +9,4 @@ def test_get_page():
     titles = crawler.crawl()
     assert isinstance(titles, list)
     assert len(titles) > 0
+    assert isinstance(titles[0], dict)

@@ -7,6 +7,8 @@ import requests
 from tqdm import tqdm
 from bs4 import BeautifulSoup
 
+from utils.futils import save_to_json
+
 stdout_handler = logging.StreamHandler(sys.stdout)
 stdout_handler.setLevel(logging.INFO)
 handlers = [stdout_handler]
@@ -26,23 +28,36 @@ class PttCrawler():
     def crawl(self):
         home_url = f"https://www.ptt.cc/bbs/{self.topic}/index.html"
         urls = self._get_all_url(home_url) + [home_url]
-        titles = self._get_title(urls, self.n_pages)
-        titles = [title.replace("\n", "") for title in titles]
+        results = self._get_title(urls, self.n_pages)
 
-        return titles
+        for result in results:
+            result["title"] = result["title"].replace("\n", "")
+
+        return results
 
     def _get_title(self, urls, n_pages=None):
-        all_titles = []
+        all_results = []
 
         n_pages = len(urls) if n_pages == None else n_pages
-        for url in tqdm(urls[:n_pages]):
-            res = self.rs.get(url)
-            soup = BeautifulSoup(res.text, "html.parser")
-            titles = [entry.select('.title')[
-                0].text for entry in soup.select('.r-ent')]
-            all_titles.extend(titles)
+        for url in tqdm(urls[:n_pages]):  # page
+            try:
+                res = self.rs.get(url)
+                soup = BeautifulSoup(res.text, "html.parser")
 
-        return all_titles
+                articles = soup.select('.r-ent')
+                page_results = []
+                for article in articles:  # article
+                    title_div = article.select('.title')[0]
+                    title = title_div.text
+                    article_url = article.select("a")[0].get("href")
+                    page_results.append({"url": article_url, "title": title})
+
+                all_results.extend(page_results)
+
+            except Exception as e:
+                logger.error(e)
+
+        return all_results
 
     def _get_all_url(self, url):
         payload = {
@@ -79,8 +94,11 @@ class PttCrawler():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("The argument parser for data crawling")
     parser.add_argument("--topic", type=str, default="Gossiping")
+    parser.add_argument("--output-dir", type=str, default="./data")
     args = parser.parse_args()
 
-    crawler = PttCrawler(topic=args.topic, n_pages=3)
-    titles = crawler.crawl()
-    logger.info(titles)
+    crawler = PttCrawler(topic=args.topic, n_pages=1)
+    results = crawler.crawl()
+
+    save_to_json(contents=results, output_dir=args.output_dir)
+    logger.info(results)
