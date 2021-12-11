@@ -15,7 +15,7 @@ def test_save_json():
     output_dir = "./"
     save_to_json(contents=test_sequences, output_dir=output_dir)
 
-    output_file = Path(output_dir) / "result.json"
+    output_file = Path(output_dir) / "0.json"
     with open(output_file) as f:
         results = json.load(f)
 

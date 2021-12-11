@@ -107,4 +107,4 @@ if __name__ == "__main__":
     results = crawler.crawl()
     output_types[args.output_type](
         contents=results, output_dir=args.output_dir)
-    logger.info(results)
+    logger.info(f"There are {len(results)} articles.")
