@@ -16,8 +16,7 @@ clean:
 	rm -rf ./htmlcov
 
 freeze:
-	poetry export --dev --without-hashes -f requirements.txt -o requirements-dev.txt
-	poetry export --without-hashes -f requirements.txt -o requirements.txt
+	pip list --format=freeze > requirements.txt
 
 test: clean
 	PYTHONPATH=./src python -m pytest tests -vv --cov ./src --cov-report=term --cov-report=html:./htmlcov --capture=no --log-cli-level=info --cov-config=.coveragerc
