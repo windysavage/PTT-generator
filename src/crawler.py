@@ -54,7 +54,7 @@ class PttCrawler():
                     article_url = article.select("a")[0].get("href")
                     page_results.append({
                         "url": article_url,
-                        "category": re.search("\[\S+]", title).group(),
+                        "category": re.search(r"\[\S+]", title).group(),
                         "title": title
                     })
 
