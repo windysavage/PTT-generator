@@ -52,7 +52,11 @@ class PttCrawler():
                     title_div = article.select('.title')[0]
                     title = title_div.text
                     article_url = article.select("a")[0].get("href")
-                    page_results.append({"url": article_url, "title": title})
+                    page_results.append({
+                        "url": article_url,
+                        "category": re.search("\[\S+]", title).group(),
+                        "title": title
+                    })
 
                 all_results.extend(page_results)
 
@@ -102,7 +106,7 @@ if __name__ == "__main__":
                         default="json", choices=["json"])
     args = parser.parse_args()
 
-    crawler = PttCrawler(topic=args.topic)
+    crawler = PttCrawler(topic=args.topic, n_pages=1)
     results = crawler.crawl()
     output_types[args.output_type](
         contents=results, output_dir=args.output_dir)

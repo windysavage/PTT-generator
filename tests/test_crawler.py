@@ -4,7 +4,7 @@ from crawler import PttCrawler
 
 
 def test_get_page():
-    n_pages = 3
+    n_pages = 1
     crawler = PttCrawler(topic="Gossiping", n_pages=n_pages)
     titles = crawler.crawl()
     assert isinstance(titles, list)
