@@ -1,4 +1,5 @@
-name: GitHub Actions Demo
+name: pytest
+author: windysavage
 on:
   push:
     paths:
