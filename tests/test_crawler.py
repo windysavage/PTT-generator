@@ -1,10 +1,11 @@
 import pytest
 
-from crawler import crawl
+from crawler import PttCrawler
 
 
 def test_get_page():
     n_pages = 3
-    titles = crawl(n_pages)
+    crawler = PttCrawler(topic="Gossiping", n_pages=n_pages)
+    titles = crawler.crawl()
     assert isinstance(titles, list)
     assert len(titles) > 0
