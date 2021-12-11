@@ -54,7 +54,7 @@ class PttCrawler():
                     article_url = article.select("a")[0].get("href")
                     page_results.append({
                         "url": article_url,
-                        "category": re.search("\[\S+]", title).group(),
+                        "category": re.search(r"\[\S+]", title).group(),
                         "title": title
                     })
 
@@ -111,4 +111,3 @@ if __name__ == "__main__":
     output_types[args.output_type](
         contents=results, output_dir=args.output_dir)
     logger.info(f"There are {len(results)} articles.")
-    print("aoa")
