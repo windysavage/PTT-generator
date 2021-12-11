@@ -7,6 +7,8 @@ import requests
 from tqdm import tqdm
 from bs4 import BeautifulSoup
 
+from utils import futils
+
 stdout_handler = logging.StreamHandler(sys.stdout)
 stdout_handler.setLevel(logging.INFO)
 handlers = [stdout_handler]
@@ -17,72 +19,95 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+output_types = {
+    "json": futils.__dict__["save_to_json"]
+}
 
-def get_title(urls, n_pages=None):
-    payload = {
-        'from': '/bbs/Gossiping/index.html',
-        'yes': 'yes'
-    }
-    rs = requests.session()
-    res = rs.post('https://www.ptt.cc/ask/over18', data=payload)
-    all_titles = []
 
-    n_pages = len(urls) if n_pages == None else n_pages
-    for url in tqdm(urls[:n_pages]):
-        res = rs.get(url)
+class PttCrawler():
+    def __init__(self, topic, n_pages=None):
+        self.topic = topic
+        self.n_pages = n_pages
+
+    def crawl(self):
+        home_url = f"https://www.ptt.cc/bbs/{self.topic}/index.html"
+        urls = self._get_all_url(home_url) + [home_url]
+        results = self._get_title(urls)
+
+        for result in results:
+            result["title"] = result["title"].replace("\n", "")
+
+        return results
+
+    def _get_title(self, urls):
+        all_results = []
+        for url in tqdm(urls):  # page
+            try:
+                res = self.rs.get(url)
+                soup = BeautifulSoup(res.text, "html.parser")
+
+                articles = soup.select('.r-ent')
+                page_results = []
+                for article in articles:  # article
+                    title_div = article.select('.title')[0]
+                    title = title_div.text
+                    article_url = article.select("a")[0].get("href")
+                    page_results.append({
+                        "url": article_url,
+                        "category": re.search("\[\S+]", title).group(),
+                        "title": title
+                    })
+
+                all_results.extend(page_results)
+
+            except Exception as e:
+                logger.error(e)
+
+        return all_results
+
+    def _get_all_url(self, url):
+        payload = {
+            'from': f'/bbs/{self.topic}/index.html',
+            'yes': 'yes'
+        }
+        self.rs = requests.session()
+        res = self.rs.post('https://www.ptt.cc/ask/over18', data=payload)
+        res = self.rs.get(url)
+
         soup = BeautifulSoup(res.text, "html.parser")
-        titles = [entry.select('.title')[
-            0].text for entry in soup.select('.r-ent')]
-        all_titles.extend(titles)
+        btns = soup.select(".btn")
+        urls = None
 
-    return all_titles
+        for btn in btns:
+            if btn.text != "‹ 上頁":
+                continue
+            last_page = btn.get("href")
+            ptns = [
+                "index[0-9][0-9][0-9][0-9][0-9]",
+                "index[0-9][0-9][0-9][0-9]",
+                "index[0-9][0-9][0-9]",
+                "index[0-9][0-9]",
+                "index[0-9]"]
+            last_idx = re.findall("|".join(ptns), last_page)
+            last_idx = last_idx[0].replace(
+                "index", "") if self.n_pages is None else self.n_pages
+            urls = [
+                f"https://www.ptt.cc/bbs/Gossiping/index{i}.html" for i in range(1, int(last_idx) + 1)]
+            break
 
-
-def get_all_url(url):
-    payload = {
-        'from': '/bbs/Gossiping/index.html',
-        'yes': 'yes'
-    }
-    rs = requests.session()
-    res = rs.post('https://www.ptt.cc/ask/over18', data=payload)
-    res = rs.get(url)
-
-    soup = BeautifulSoup(res.text, "html.parser")
-    btns = soup.select(".btn")
-    urls = None
-
-    for btn in btns:
-        if btn.text != "‹ 上頁":
-            continue
-        last_page = btn.get("href")
-        ptns = [
-            "index[0-9][0-9][0-9][0-9][0-9]",
-            "index[0-9][0-9][0-9][0-9]",
-            "index[0-9][0-9][0-9]",
-            "index[0-9][0-9]",
-            "index[0-9]"]
-        last_idx = re.findall("|".join(ptns), last_page)
-        last_idx = last_idx[0].replace("index", "")
-        urls = [
-            f"https://www.ptt.cc/bbs/Gossiping/index{i}.html" for i in range(1, int(last_idx))]
-        break
-
-    return urls
-
-
-def crawl(n_pages):
-    home_url = "https://www.ptt.cc/bbs/Gossiping/index.html"
-    urls = get_all_url(home_url) + [home_url]
-    titles = get_title(urls, n_pages)
-    titles = [title.replace("\n", "") for title in titles]
-
-    return titles
+        return urls
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("The argument parser for data crawling")
-    parser.add_argument("--topic", type=str, default="Gossip")
+    parser.add_argument("--topic", type=str, default="Gossiping")
+    parser.add_argument("--output-dir", type=str, default="./data")
+    parser.add_argument("--output-type", type=str,
+                        default="json", choices=["json"])
     args = parser.parse_args()
 
-    titles = crawl(n_pages=5)
-    print(titles)
+    crawler = PttCrawler(topic=args.topic, n_pages=1)
+    results = crawler.crawl()
+    output_types[args.output_type](
+        contents=results, output_dir=args.output_dir)
+    logger.info(f"There are {len(results)} articles.")
