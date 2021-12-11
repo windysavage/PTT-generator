@@ -111,3 +111,4 @@ if __name__ == "__main__":
     output_types[args.output_type](
         contents=results, output_dir=args.output_dir)
     logger.info(f"There are {len(results)} articles.")
+    print("AOA")
