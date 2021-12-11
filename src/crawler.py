@@ -7,7 +7,7 @@ import requests
 from tqdm import tqdm
 from bs4 import BeautifulSoup
 
-from utils.futils import save_to_json
+from utils import futils
 
 stdout_handler = logging.StreamHandler(sys.stdout)
 stdout_handler.setLevel(logging.INFO)
@@ -18,6 +18,10 @@ logging.basicConfig(
     handlers=handlers)
 
 logger = logging.getLogger(__name__)
+
+output_types = {
+    "json": futils.__dict__["save_to_json"]
+}
 
 
 class PttCrawler():
@@ -95,10 +99,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser("The argument parser for data crawling")
     parser.add_argument("--topic", type=str, default="Gossiping")
     parser.add_argument("--output-dir", type=str, default="./data")
+    parser.add_argument("--output-type", type=str, default="json")
     args = parser.parse_args()
 
     crawler = PttCrawler(topic=args.topic, n_pages=1)
     results = crawler.crawl()
-
-    save_to_json(contents=results, output_dir=args.output_dir)
+    output_types[args.output_type](
+        contents=results, output_dir=args.output_dir)
     logger.info(results)
