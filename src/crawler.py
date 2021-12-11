@@ -25,25 +25,23 @@ output_types = {
 
 
 class PttCrawler():
-    def __init__(self, topic, n_pages):
+    def __init__(self, topic, n_pages=None):
         self.topic = topic
         self.n_pages = n_pages
 
     def crawl(self):
         home_url = f"https://www.ptt.cc/bbs/{self.topic}/index.html"
         urls = self._get_all_url(home_url) + [home_url]
-        results = self._get_title(urls, self.n_pages)
+        results = self._get_title(urls)
 
         for result in results:
             result["title"] = result["title"].replace("\n", "")
 
         return results
 
-    def _get_title(self, urls, n_pages=None):
+    def _get_title(self, urls):
         all_results = []
-
-        n_pages = len(urls) if n_pages == None else n_pages
-        for url in tqdm(urls[:n_pages]):  # page
+        for url in tqdm(urls):  # page
             try:
                 res = self.rs.get(url)
                 soup = BeautifulSoup(res.text, "html.parser")
@@ -87,9 +85,10 @@ class PttCrawler():
                 "index[0-9][0-9]",
                 "index[0-9]"]
             last_idx = re.findall("|".join(ptns), last_page)
-            last_idx = last_idx[0].replace("index", "")
+            last_idx = last_idx[0].replace(
+                "index", "") if self.n_pages is None else self.n_pages
             urls = [
-                f"https://www.ptt.cc/bbs/Gossiping/index{i}.html" for i in range(1, int(last_idx))]
+                f"https://www.ptt.cc/bbs/Gossiping/index{i}.html" for i in range(1, last_idx + 1)]
             break
 
         return urls
@@ -103,7 +102,7 @@ if __name__ == "__main__":
                         default="json", choices=["json"])
     args = parser.parse_args()
 
-    crawler = PttCrawler(topic=args.topic, n_pages=1)
+    crawler = PttCrawler(topic=args.topic)
     results = crawler.crawl()
     output_types[args.output_type](
         contents=results, output_dir=args.output_dir)
