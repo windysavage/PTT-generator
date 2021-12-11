@@ -31,5 +31,6 @@ def test_save_json():
         results = json.load(f)
 
     assert results == test_sequences
+    assert 0 == 1
 
     output_file.unlink()
