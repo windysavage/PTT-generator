@@ -4,6 +4,8 @@ jobs:
   CI:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
       - uses: windysavage/PTT-generator@main
       - name: test
         run: make test
