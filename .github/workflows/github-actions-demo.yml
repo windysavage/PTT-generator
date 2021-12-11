@@ -4,6 +4,6 @@ jobs:
   CI:
     runs-on: ubuntu-latest
     steps:
+      - uses: windysavage/PTT-generator@main
       - name: test
-        uses: windysavage/PTT-generator@main
         run: make test
