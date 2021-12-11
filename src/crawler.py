@@ -88,7 +88,7 @@ class PttCrawler():
             last_idx = last_idx[0].replace(
                 "index", "") if self.n_pages is None else self.n_pages
             urls = [
-                f"https://www.ptt.cc/bbs/Gossiping/index{i}.html" for i in range(1, last_idx + 1)]
+                f"https://www.ptt.cc/bbs/Gossiping/index{i}.html" for i in range(1, int(last_idx) + 1)]
             break
 
         return urls
