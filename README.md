@@ -9,7 +9,7 @@ In order to prepare the datasets for language generation, this repo offered a to
 
 - To crawl titles of a given topic
 
-```console
-$> python src/crawler.py --topic Gossiping
+```bash
+python src/crawler.py --topic Gossiping
 ```
   
