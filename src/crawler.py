@@ -46,12 +46,7 @@ class PttCrawler():
         title = title_div.text
 
         # deleted articles didn't have url.
-        try:
-            article_url = article.select("a")[0].get("href")
-        except Exception as e:
-            logger.info("This article has been deleted.")
-            logger.error(e)
-            return {}, cont
+        article_url = article.select("a")[0].get("href")
 
         res = self.rs.get("http://www.ptt.cc" + article_url)
         soup = BeautifulSoup(res.text, "html.parser")
@@ -96,7 +91,11 @@ class PttCrawler():
             articles = soup.select('.r-ent')
 
             for article in articles:  # article
-                cont = self._get_content(article)
+                try:
+                    cont = self._get_content(article)
+                except Exception as e:
+                    logger.error(e)
+                    continue
 
                 if not cont:
                     return
