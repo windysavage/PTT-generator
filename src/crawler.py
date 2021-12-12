@@ -72,8 +72,6 @@ class PttCrawler():
                 continue
 
         if publish_time != "" and datetime.strptime(publish_time, "%a %b %d %H:%M:%S %Y") < self.until:
-            print(publish_time)
-            print(datetime.strptime(publish_time, "%a %b %d %H:%M:%S %Y"))
             cont = False
 
         return{
