@@ -26,21 +26,18 @@ output_types = {
 
 
 class PttCrawler():
-    def __init__(self, topic, until):
-        self.topic = topic
-        self.until = until
+    def __init__(self, args):
+        self.topic = args.topic
+        self.output_dir = args.output_dir
+        self.output_type = args.output_type
+        self.until = datetime.strptime(args.until, "%Y-%m-%d@%H-%M-%S")
 
     def crawl(self):
         home_url = f"https://www.ptt.cc/bbs/{self.topic}/index.html"
         page_urls = self._get_page_url(home_url)
         page_urls.reverse()
 
-        articles = self._get_article(page_urls)
-
-        for article in articles:
-            article["title"] = article.get("title", "").replace("\n", "")
-
-        return articles
+        self._get_article(page_urls)
 
     def _get_content(self, article):
         cont = True
@@ -71,37 +68,38 @@ class PttCrawler():
                 publish_time = meta_line.select('.article-meta-value')[0].text
                 continue
 
-        if publish_time != "" and datetime.strptime(publish_time, "%a %b %d %H:%M:%S %Y") < self.until:
+        publish_time_dt = datetime.strptime(
+            publish_time, "%a %b %d %H:%M:%S %Y")
+        pub_year = publish_time_dt.year
+        pub_month = publish_time_dt.month
+
+        if publish_time != "" and publish_time_dt < self.until:
             cont = False
 
-        return{
-            "url": article_url,
-            "author": author,
-            "title": title,
-            "publish_time": publish_time
-        }, cont
+        output_types[self.output_type](
+            content={"url": article_url,
+                     "author": author,
+                     "title": title,
+                     "publish_time": publish_time},
+            output_dir=self.output_dir,
+            month_dir=f"{pub_year}-{pub_month}"
+        )
+
+        return cont
 
     def _get_article(self, urls):
-        all_results = []
 
         for url in tqdm(urls):  # page
             res = self.rs.get(url)
             soup = BeautifulSoup(res.text, "html.parser")
 
             articles = soup.select('.r-ent')
-            page_results = []
 
             for article in articles:  # article
-                content, cont = self._get_content(article)
-                page_results.append(content)
+                cont = self._get_content(article)
 
                 if not cont:
-                    all_results.extend(page_results)
-                    return all_results
-
-            all_results.extend(page_results)
-
-        return all_results
+                    return
 
     def _get_page_url(self, url):
         payload = {
@@ -135,7 +133,7 @@ class PttCrawler():
         return urls
 
 
-if __name__ == "__main__":
+def cli(args):
     parser = argparse.ArgumentParser("The argument parser for data crawling")
     parser.add_argument("--topic", type=str, default="Gossiping")
     parser.add_argument("--output-dir", type=str, default="./data")
@@ -143,12 +141,11 @@ if __name__ == "__main__":
                         default="json", choices=["json"])
     parser.add_argument("--until", type=str,
                         default="2021-12-12@11-20-00")
-    args = parser.parse_args()
+    return parser.parse_args(args)
 
-    until = datetime.strptime(args.until, "%Y-%m-%d@%H-%M-%S")
 
-    crawler = PttCrawler(topic=args.topic, until=until)
-    results = crawler.crawl()
-    output_types[args.output_type](
-        contents=results, output_dir=args.output_dir)
-    logger.info(f"There are {len(results)} articles.")
+if __name__ == "__main__":
+    args = cli(sys.argv[1:])
+
+    crawler = PttCrawler(args)
+    crawler.crawl()
