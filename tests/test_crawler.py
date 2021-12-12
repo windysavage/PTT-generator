@@ -4,9 +4,9 @@ from crawler import PttCrawler
 
 
 def test_get_page():
-    n_pages = 1
+    n_pages = 0
     crawler = PttCrawler(topic="Gossiping", n_pages=n_pages)
-    titles = crawler.crawl()
-    assert isinstance(titles, list)
-    assert len(titles) > 0
-    assert isinstance(titles[0], dict)
+    contents = crawler.crawl()
+    assert isinstance(contents, list)
+    assert len(contents) > 0
+    assert isinstance(contents[0], dict)

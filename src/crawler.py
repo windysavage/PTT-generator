@@ -31,41 +31,64 @@ class PttCrawler():
 
     def crawl(self):
         home_url = f"https://www.ptt.cc/bbs/{self.topic}/index.html"
-        urls = self._get_all_url(home_url) + [home_url]
-        results = self._get_title(urls)
+        page_urls = self._get_page_url(home_url) + [home_url]
+        articles = self._get_article(page_urls)
 
-        for result in results:
-            result["title"] = result["title"].replace("\n", "")
+        for article in articles:
+            article["title"] = article["title"].replace("\n", "")
 
-        return results
+        return articles
 
-    def _get_title(self, urls):
+    def _get_content(self, article):
+        title_div = article.select('.title')[0]
+        title = title_div.text
+
+        article_url = article.select("a")[0].get("href")
+
+        res = self.rs.get("http://www.ptt.cc" + article_url)
+        soup = BeautifulSoup(res.text, "html.parser")
+
+        author = ""
+        publish_time = ""
+
+        mata_lines = soup.select('.article-metaline')
+        for meta_line in mata_lines:
+            if meta_line.select('.article-meta-tag')[0].text == "作者":
+                author = meta_line.select('.article-meta-value')[0].text
+                continue
+            # if meta_line.select('.article-meta-tag')[0].text == "標題":
+            #     title = meta_line.select('.article-meta-value')[0].text
+            #     continue
+            if meta_line.select('.article-meta-tag')[0].text == "時間":
+                publish_time = meta_line.select('.article-meta-value')[0].text
+                continue
+        return{
+            "url": article_url,
+            "author": author,
+            "title": title,
+            "publish_time": publish_time
+        }
+
+    def _get_article(self, urls):
         all_results = []
         for url in tqdm(urls):  # page
-            try:
-                res = self.rs.get(url)
-                soup = BeautifulSoup(res.text, "html.parser")
 
-                articles = soup.select('.r-ent')
-                page_results = []
-                for article in articles:  # article
-                    title_div = article.select('.title')[0]
-                    title = title_div.text
-                    article_url = article.select("a")[0].get("href")
-                    page_results.append({
-                        "url": article_url,
-                        "category": re.search(r"\[\S+]", title).group(),
-                        "title": title
-                    })
+            res = self.rs.get(url)
+            soup = BeautifulSoup(res.text, "html.parser")
 
-                all_results.extend(page_results)
+            articles = soup.select('.r-ent')
+            page_results = []
+            for article in articles:  # article
+                page_results.append(self._get_content(article))
 
-            except Exception as e:
-                logger.error(e)
+            all_results.extend(page_results)
+
+            # except Exception as e:
+            #     logger.error(e)
 
         return all_results
 
-    def _get_all_url(self, url):
+    def _get_page_url(self, url):
         payload = {
             'from': f'/bbs/{self.topic}/index.html',
             'yes': 'yes'
