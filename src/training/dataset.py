@@ -24,15 +24,18 @@ class PttDataset(Dataset):
             return_token_type_ids=True
         )
 
-        input_ids = torch.tensor(
-            data=inputs["input_ids"],
-            dtype=torch.int32
-        )
+        inputs = {k: torch.tensor(v, dtype=torch.int32)
+                  for k, v in inputs.items()}
+        inputs["labels"] = torch.tensor(
+            self._get_labels(inputs["input_ids"]), dtype=torch.int64)
 
-        return input_ids
+        return inputs
 
     def _reset(self):
         random.shuffle(self.docs_path)
 
     def __len__(self):
         return len(self.docs_path)
+
+    def _get_labels(self, input_ids):
+        return [input_id if input_id not in [0, 101, 102] else -100 for input_id in input_ids]

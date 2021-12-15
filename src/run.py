@@ -66,10 +66,10 @@ class PttCli():
         train_docs_path = docs_path[:train_size]
         # val_docs_path = docs_path[train_size:]
 
-        model = zoo.__dict__[args.model]()
+        model, tokenizer = zoo.__dict__[args.model]()
 
         train_ds = PttDataset(docs_path=train_docs_path,
-                              tokenizer=model.tokenizer)
+                              tokenizer=tokenizer)
 
         # val_ds = PttDataset(docs_path=val_docs_path, tokenizer=model.tokenizer)
 
