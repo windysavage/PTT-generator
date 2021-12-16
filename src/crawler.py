@@ -83,11 +83,13 @@ class PttCrawler():
         return cont
 
     def _get_article(self, urls):
-
         for url in tqdm(urls):  # page
-            res = self.rs.get(url)
-            soup = BeautifulSoup(res.text, "html.parser")
+            try:
+                res = self.rs.get(url, timeout=60)
+            except Exception as e:
+                logger.error(e)
 
+            soup = BeautifulSoup(res.text, "html.parser")
             articles = soup.select('.r-ent')
 
             for article in articles:  # article
