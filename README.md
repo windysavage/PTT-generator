@@ -1,4 +1,4 @@
-# PTT-generator
+# PTT-generator / PTT生成器
 
 This repo aims to implement a PTT (a well-knowned BBS in Taiwan) generator via natural language generation techniques. The generated contents might be titles, replies...etc.
 
@@ -10,6 +10,11 @@ In order to prepare the datasets for language generation, this repo offered a to
 - To crawl titles of a given topic
 
 ```bash
-python src/crawler.py --topic Gossiping --output-dir ./data --output-type json
+python src/crawler.py --topic Gossiping --output-dir ./data --output-type json --until 2021/01/01
 ```
-  
+
+## Finetune a languane model
+- You can utilize the data collected in the last step to finetune a language model.
+```bash
+python src/run.py train
+```
