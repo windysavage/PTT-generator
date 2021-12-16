@@ -1,0 +1,7 @@
+{
+    "model_type": "gpt2_chinese",
+    "batch_size": 32,
+    "epoch": 5,
+    "lr": 1e-4,
+    "optimizer": "Adam"
+}
