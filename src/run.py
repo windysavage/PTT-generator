@@ -6,6 +6,7 @@ import argparse
 from pathlib import Path
 
 import torch
+from tqdm import tqdm
 from torch.utils.data import DataLoader
 
 from training.dataset import PttDataset
@@ -64,21 +65,21 @@ class PttCli():
 
         train_size = round(len(docs_path) * args.train_split)
         train_docs_path = docs_path[:train_size]
-        # val_docs_path = docs_path[train_size:]
+        val_docs_path = docs_path[train_size:]
 
         model, tokenizer = zoo.__dict__[args.model]()
 
         train_ds = PttDataset(docs_path=train_docs_path,
                               tokenizer=tokenizer)
 
-        # val_ds = PttDataset(docs_path=val_docs_path, tokenizer=model.tokenizer)
+        val_ds = PttDataset(docs_path=val_docs_path, tokenizer=model.tokenizer)
 
         train_loader = DataLoader(
             train_ds, batch_size=model_config["batch_size"], shuffle=False)
-        # val_loader = DataLoader(
-        #     val_ds, batch_size=model_config["batch_size"], shuffle=False)
+        val_loader = DataLoader(
+            val_ds, batch_size=model_config["batch_size"], shuffle=False)
 
-        for epoch in range(model_config["epoch"]):
+        for epoch in tqdm(model_config["epoch"]):
             train_epcoh(
                 epoch=epoch,
                 data_loader=train_loader,
@@ -86,7 +87,12 @@ class PttCli():
                 config=model_config
             )
             train_ds._reset()
-            break
+
+            val_epcoh(
+                epoch=epoch,
+                data_loader=val_loader,
+                model=model
+            )
 
 
 if __name__ == "__main__":

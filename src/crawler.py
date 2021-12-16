@@ -48,7 +48,7 @@ class PttCrawler():
         # deleted articles didn't have url.
         article_url = article.select("a")[0].get("href")
 
-        res = self.rs.get("http://www.ptt.cc" + article_url)
+        res = self.rs.get("http://www.ptt.cc" + article_url, timeout=60)
         soup = BeautifulSoup(res.text, "html.parser")
 
         author = ""
@@ -139,7 +139,7 @@ def cli(args):
     parser.add_argument("--output-type", type=str,
                         default="json", choices=["json"])
     parser.add_argument("--until", type=str,
-                        default="2021-12-12@11-20-00")
+                        default="2021-01-01@11-20-00")
     return parser.parse_args(args)
 
 
