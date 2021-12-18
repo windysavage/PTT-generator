@@ -1,6 +1,6 @@
 import logging
 
-import tqdm
+from tqdm import tqdm
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
@@ -24,7 +24,7 @@ def train_epcoh(epoch, data_loader, model, config):
     losses = []
 
     logger.info(f"start training epoch {epoch}")
-    for _, batch in enumerate(tqdm(data_loader)):
+    for batch in tqdm(data_loader):
         batch = {k: v.to(device) for k, v in batch.items()}
         preds = model(**batch)
         loss = preds.loss
