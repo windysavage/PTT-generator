@@ -33,7 +33,6 @@ if __name__ == "__main__":
     df = pd.DataFrame(files, columns=["file_path"])
     logger.info(f"Reading {len(df)} json files.")
     df["title"] = df["file_path"].apply(lambda x: get_title(x))
-    df["title"] = df["title"].apply(lambda x: x.replace("Re: ", ""))
     df = df.drop_duplicates(subset=["title"])
     logger.info(f"There are {len(df)} json files after dedup.")
 
