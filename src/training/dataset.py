@@ -6,16 +6,13 @@ from torch.utils.data import Dataset
 
 
 class PttDataset(Dataset):
-    def __init__(self, docs_path, tokenizer):
-        self.docs_path = docs_path
+    def __init__(self, docs, doc_type, tokenizer):
+        self.docs = docs.reset_index()
+        self.doc_type = doc_type
         self.tokenizer = tokenizer
 
     def __getitem__(self, index):
-        doc_path = self.docs_path[index]
-        with open(doc_path) as f:
-            doc = json.load(f)
-
-        title = doc["title"]
+        title = self.docs.at[index, self.doc_type]
         inputs = self.tokenizer(
             text=title,
             padding="max_length",
@@ -32,10 +29,10 @@ class PttDataset(Dataset):
         return inputs
 
     def _reset(self):
-        random.shuffle(self.docs_path)
+        random.shuffle(self.docs)
 
     def __len__(self):
-        return len(self.docs_path)
+        return len(self.docs)
 
     def _get_labels(self, input_ids):
         return [input_id if input_id not in [0, 101, 102] else -100 for input_id in input_ids]
