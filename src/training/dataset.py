@@ -7,7 +7,7 @@ from torch.utils.data import Dataset
 
 class PttDataset(Dataset):
     def __init__(self, docs, doc_type, tokenizer):
-        self.docs = docs
+        self.docs = docs.reset_index()
         self.doc_type = doc_type
         self.tokenizer = tokenizer
 
