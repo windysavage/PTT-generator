@@ -39,7 +39,6 @@ def train_epcoh(epoch, data_loader, model, config):
 
 
 def val_epcoh(epoch, data_loader, model):
-    logger.info("start validating")
     model.eval()
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -47,9 +46,8 @@ def val_epcoh(epoch, data_loader, model):
 
     losses = []
 
-    logger.info(f"start training epoch {epoch}")
     with torch.no_grad():
-        for _, batch in enumerate(data_loader):
+        for batch in tqdm(data_loader):
             batch = {k: v.to(device) for k, v in batch.items()}
             preds = model(**batch)
             loss = preds.loss
