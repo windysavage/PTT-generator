@@ -29,7 +29,7 @@ class PttDataset(Dataset):
         return inputs
 
     def _reset(self):
-        random.shuffle(self.docs)
+        self.docs = self.docs.sample(frac=1).reset_index()
 
     def __len__(self):
         return len(self.docs)

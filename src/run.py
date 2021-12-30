@@ -58,7 +58,7 @@ class PttCli():
             model_config = json.load(f)
 
         random.seed(args.random_seed)
-        docs = pd.read_csv(Path(args.root_dir) / "data.csv")
+        docs = pd.read_csv(Path(args.root_dir) / "data.csv")[:100]
         docs = docs.sample(frac=1, random_state=args.random_seed)
 
         train_size = round(len(docs) * args.train_split)
