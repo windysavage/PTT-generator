@@ -35,6 +35,7 @@ def train_epcoh(epoch, data_loader, model, config):
         optimizer.zero_grad()
 
     writer.add_scalar('Loss/train', sum(losses)/len(losses), epoch)
+    return sum(losses)/len(losses)
 
 
 def val_epcoh(epoch, data_loader, model):
@@ -55,3 +56,4 @@ def val_epcoh(epoch, data_loader, model):
             losses.append(loss.item())
 
     writer.add_scalar('Loss/val', sum(losses)/len(losses), epoch)
+    return sum(losses)/len(losses)

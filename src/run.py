@@ -79,8 +79,8 @@ class PttCli():
         val_loader = DataLoader(
             val_ds, batch_size=model_config["batch_size"], shuffle=False)
 
-        for epoch in tqdm(range(model_config["epoch"])):
-            train_epcoh(
+        for epoch in range(model_config["epoch"]):
+            train_loss = train_epcoh(
                 epoch=epoch,
                 data_loader=train_loader,
                 model=model,
@@ -88,11 +88,14 @@ class PttCli():
             )
             train_ds._reset()
 
-            val_epcoh(
+            val_loss = val_epcoh(
                 epoch=epoch,
                 data_loader=val_loader,
                 model=model
             )
+
+            logger.info(
+                f"Epoch: {epoch}, Train_loss: {train_loss}, Val_loss: {val_loss}")
 
 
 if __name__ == "__main__":
