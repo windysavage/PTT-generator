@@ -5,9 +5,9 @@ import logging
 import argparse
 from pathlib import Path
 
-import torch
 from tqdm import tqdm
 from torch.utils.data import DataLoader
+import pandas as pd
 
 from training.dataset import PttDataset
 from training.trainer import train_epcoh, val_epcoh
@@ -48,7 +48,7 @@ class PttCli():
     def train(self, argv):
         parser = argparse.ArgumentParser(
             description='Train NLG model')
-        parser.add_argument("--data-root", type=str, default="./data")
+        parser.add_argument("--root-dir", type=str, default="./data")
         parser.add_argument("--train-split", type=float, default=0.8)
         parser.add_argument("--model", type=str, default="gpt2_chinese")
         parser.add_argument("--random-seed", type=int, default=111)
@@ -58,29 +58,29 @@ class PttCli():
             model_config = json.load(f)
 
         random.seed(args.random_seed)
-
-        docs_path = [doc_path for doc_path in Path(
-            args.data_root).glob("**/*.json")]
-        random.shuffle(docs_path)
-
-        train_size = round(len(docs_path) * args.train_split)
-        train_docs_path = docs_path[:train_size]
-        val_docs_path = docs_path[train_size:]
+        docs = pd.read_csv(Path(args.root_dir) / "data.csv")
+        docs = docs.sample(
+            frac=1, random_state=args.random_seed, ignore_index=True)
+        train_size = round(len(docs) * args.train_split)
+        train_docs = docs[:train_size]
+        val_docs = docs[train_size:]
 
         model, tokenizer = zoo.__dict__[args.model]()
 
-        train_ds = PttDataset(docs_path=train_docs_path,
+        train_ds = PttDataset(docs=train_docs,
+                              doc_type="title",
                               tokenizer=tokenizer)
 
-        val_ds = PttDataset(docs_path=val_docs_path, tokenizer=model.tokenizer)
+        val_ds = PttDataset(docs=val_docs, doc_type="title",
+                            tokenizer=tokenizer)
 
         train_loader = DataLoader(
             train_ds, batch_size=model_config["batch_size"], shuffle=False)
         val_loader = DataLoader(
             val_ds, batch_size=model_config["batch_size"], shuffle=False)
 
-        for epoch in tqdm(model_config["epoch"]):
-            train_epcoh(
+        for epoch in range(model_config["epoch"]):
+            train_loss = train_epcoh(
                 epoch=epoch,
                 data_loader=train_loader,
                 model=model,
@@ -88,11 +88,14 @@ class PttCli():
             )
             train_ds._reset()
 
-            val_epcoh(
+            val_loss = val_epcoh(
                 epoch=epoch,
                 data_loader=val_loader,
                 model=model
             )
+
+            logger.info(
+                f"Epoch: {epoch}, Train_loss: {train_loss}, Val_loss: {val_loss}")
 
 
 if __name__ == "__main__":
