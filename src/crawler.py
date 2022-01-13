@@ -53,6 +53,10 @@ class PttCrawler():
 
         author = ""
         publish_time = ""
+        main_content = ""
+
+        content_area = soup.find(id="main-content")
+        main_content = content_area.text
 
         mata_lines = soup.select('.article-metaline')
         for meta_line in mata_lines:
@@ -75,6 +79,7 @@ class PttCrawler():
             content={"url": article_url,
                      "author": author,
                      "title": title,
+                     "main_content": main_content,
                      "publish_time": publish_time},
             output_dir=self.output_dir,
             month_dir=f"{pub_year}-{pub_month}"
