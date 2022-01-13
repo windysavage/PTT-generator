@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from utils.helper import get_title
+from utils.helper import get_content
 
 stdout_handler = logging.StreamHandler(sys.stdout)
 stdout_handler.setLevel(logging.INFO)
@@ -20,7 +20,8 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--root-dir', help='the root directory of data.')
+    parser.add_argument('--root-dir', default="./data",
+                        help='the root directory of data.')
     args = parser.parse_args()
 
     if not Path(args.root_dir).exists():
@@ -32,8 +33,21 @@ if __name__ == "__main__":
 
     df = pd.DataFrame(files, columns=["file_path"])
     logger.info(f"Reading {len(df)} json files.")
-    df["title"] = df["file_path"].apply(lambda x: get_title(x))
-    df = df.drop_duplicates(subset=["title"])
-    logger.info(f"There are {len(df)} json files after dedup.")
+
+    titles = []
+    articles = []
+    comments = []
+    for _, row in df.iterrows():
+        path = row["file_path"]
+        title, article, comment = get_content(path)
+        titles.append(title)
+        articles.append(article)
+        comments.append(comment)
+
+    df["title"] = titles
+    df["article"] = articles
+    df["comments"] = comment
+
+    logger.info(f"There are {len(df)} json files.")
 
     df.to_csv(root_dir / "data.csv", index=False)
